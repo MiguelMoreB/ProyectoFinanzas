@@ -8,7 +8,7 @@
 /* ---------- Utilidades ---------- */
 const $ = (sel) => document.querySelector(sel);
 const fmt = (n) =>
-  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n || 0);
+  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const mesKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -441,6 +441,7 @@ function importarEstado(e) {
     try {
       const filas = parseCSV(reader.result); // texto -> tabla
       const movs = analizarFilas(filas);     // tabla -> movimientos
+      marcarDuplicados(movs);                // marca los que ya tienes
       if (movs.length === 0) {
         alert("No encontré movimientos. Mándame los títulos de las columnas de tu CSV para ajustarlo.");
         return;
@@ -520,13 +521,12 @@ function analizarFilas(filas) {
     }
     if (!monto) continue;
 
-    movs.push({
-      incluir: true,
-      fecha,
-      concepto: ((cConcep >= 0 ? f[cConcep] : "") || "Movimiento").slice(0, 60),
-      monto,
-      tipo,
-    });
+    // Arma el texto del concepto
+    let concepto = ((cConcep >= 0 ? f[cConcep] : "") || "Movimiento").slice(0, 60);
+    // Si el concepto dice "apartado", cuéntalo como ahorro (no como gasto)
+    if (concepto.toLowerCase().includes("apartado")) tipo = "ahorro";
+
+    movs.push({ incluir: true, fecha, concepto, monto, tipo });
   }
   return movs;
 }
@@ -559,21 +559,42 @@ function parseFecha(txt) {
   return "";
 }
 
+// Marca como "ya registrado" los movimientos que ya existen en la app.
+// Compara por fecha + monto + tipo, respetando cantidades repetidas.
+function marcarDuplicados(movs) {
+  const existentes = {};
+  DB.todo().movimientos.forEach((m) => {
+    const k = `${m.fecha}|${m.monto}|${m.tipo}`;
+    existentes[k] = (existentes[k] || 0) + 1;   // cuenta cuántos hay de cada uno
+  });
+  movs.forEach((m) => {
+    const k = `${m.fecha}|${m.monto}|${m.tipo}`;
+    if (existentes[k] > 0) {
+      m.incluir = false;      // ya lo tienes: no se agrega por defecto
+      m.duplicado = true;
+      existentes[k]--;        // "consume" uno, por si hay varios iguales
+    }
+  });
+}
+
 // (4) Pantalla de revisión: tú decides qué se guarda
 function mostrarRevisionImport() {
+  const nuevos = importPendiente.filter((m) => m.incluir).length;
+  const repetidos = importPendiente.length - nuevos;
+
   const filas = importPendiente.map((m, i) => `
-    <label class="mov" style="cursor:pointer">
+    <label class="mov" style="cursor:pointer;${m.duplicado ? "opacity:.55" : ""}">
       <input type="checkbox" ${m.incluir ? "checked" : ""} onchange="toggleImport(${i}, this.checked)" style="width:20px;height:20px" />
       <div class="mov-mid">
         <div class="mov-cat">${m.concepto}</div>
-        <div class="mov-note">${m.fecha} · ${m.tipo}</div>
+        <div class="mov-note">${m.fecha} · ${m.tipo}${m.duplicado ? " · ya registrado" : ""}</div>
       </div>
       <div class="mov-amt ${m.tipo === "ingreso" ? "plus" : ""}">${m.tipo === "ingreso" ? "+" : "−"}${fmt(m.monto)}</div>
     </label>`).join("");
 
   $("#modal").innerHTML = `
     <h2>Revisar ${importPendiente.length} movimientos</h2>
-    <div class="hint" style="margin-bottom:12px">Desmarca los que no quieras. Después puedes cambiar su categoría tocándolos.</div>
+    <div class="hint" style="margin-bottom:12px">Se agregarán <b>${nuevos}</b> nuevos. ${repetidos} ya estaban registrados (desmarcados). Puedes marcar o desmarcar los que quieras.</div>
     <div class="mov-list" style="max-height:50vh;overflow:auto">${filas}</div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
@@ -592,7 +613,9 @@ function confirmarImportacion() {
     DB.agregarMov({
       id: uid(),
       tipo: m.tipo,
-      categoria: m.tipo === "ingreso" ? "Ventas" : "Sin categoría",
+      categoria: m.tipo === "ingreso" ? "Ventas"
+               : m.tipo === "ahorro"  ? "Apartado"
+               : "Sin categoría",
       monto: m.monto,
       fecha: m.fecha,
       nota: m.concepto,
