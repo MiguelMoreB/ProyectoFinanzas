@@ -1,0 +1,287 @@
+/* ===== Base ===== */
+:root {
+  --bg: #0f172a;
+  --bg-soft: #1e293b;
+  --card: #1e293b;
+  --card-2: #273549;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --line: #334155;
+  --brand: #38bdf8;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --ingreso: #22c55e;
+  --factura: #f97316;
+  --gasto: #38bdf8;
+  --ahorro: #a855f7;
+  --deuda: #ef4444;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overscroll-behavior-y: contain;
+}
+
+body {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 130px; /* espacio para tabbar + fab */
+}
+
+h1, h2, h3 { margin: 0; }
+
+button { font-family: inherit; cursor: pointer; border: none; }
+
+/* ===== Topbar ===== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.topbar h1 { font-size: 18px; font-weight: 600; }
+.month-nav {
+  background: var(--card);
+  color: var(--text);
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ===== Contenido ===== */
+main { padding: 16px; }
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.card-title { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+/* ===== Resumen del mes ===== */
+.balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 6px;
+}
+.balance .big { font-size: 34px; font-weight: 700; }
+.balance .sub { color: var(--muted); font-size: 13px; text-align: right; }
+
+.mini-stats { display: flex; gap: 10px; margin-top: 6px; }
+.mini-stat { flex: 1; background: var(--card); border-radius: 14px; padding: 14px; }
+.mini-stat .label { color: var(--muted); font-size: 12px; }
+.mini-stat .val { font-size: 19px; font-weight: 700; margin-top: 4px; }
+
+/* ===== Barras 50/30/20 ===== */
+.bar-row { margin-bottom: 16px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-head { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+.bar-head .pct { color: var(--muted); font-size: 12px; }
+.bar-track { height: 10px; background: var(--card-2); border-radius: 6px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; transition: width .4s ease; }
+.bar-amt { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+/* ===== Lista de movimientos ===== */
+.mov-list { display: flex; flex-direction: column; }
+.mov {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.mov:last-child { border-bottom: none; }
+.mov-ico {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.mov-mid { flex: 1; min-width: 0; }
+.mov-cat { font-weight: 600; font-size: 15px; }
+.mov-note { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mov-amt { font-weight: 700; font-size: 15px; white-space: nowrap; }
+.mov-amt.plus { color: var(--green); }
+
+.empty { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
+
+/* ===== FAB ===== */
+.fab {
+  position: fixed;
+  right: max(16px, calc(50% - 260px + 16px));
+  bottom: 84px;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #0b1120;
+  font-size: 34px;
+  line-height: 1;
+  display: grid;         /* NUEVO */
+  place-items: center;   /* NUEVO: centra el "+" en ambos ejes */
+  z-index: 30;
+  box-shadow: 0 8px 24px rgba(56,189,248,.4);
+}
+
+/* ===== Tabbar ===== */
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  background: var(--bg-soft);
+  border-top: 1px solid var(--line);
+  z-index: 25;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  flex: 1;
+  background: none;
+  color: var(--muted);
+  padding: 10px 0 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+}
+.tab.active { color: var(--brand); }
+.tab-ico { font-size: 20px; }
+
+/* ===== Modal ===== */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+/* El atributo hidden debe ganarle al display:flex de arriba,
+   si no, la capa invisible bloquea los toques de la pantalla. */
+.modal-bg[hidden] { display: none; }
+.modal {
+  background: var(--bg-soft);
+  width: 100%;
+  max-width: 520px;
+  border-radius: 22px 22px 0 0;
+  padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal h2 { font-size: 18px; margin-bottom: 16px; }
+
+/* Selector de tipo */
+.type-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+.type-btn {
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 10px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 11px;
+  border: 2px solid transparent;
+}
+.type-btn .t-ico { font-size: 20px; }
+.type-btn.sel { border-color: var(--brand); color: var(--text); }
+
+/* Monto grande */
+.amount-input {
+  width: 100%;
+  background: var(--card);
+  border: none;
+  color: var(--text);
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 14px;
+}
+.amount-input:focus { outline: 2px solid var(--brand); }
+
+label.field { display: block; margin-bottom: 12px; }
+label.field span { display: block; color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+.field input, .field select {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+.cat-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.chip {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+.chip.sel { background: var(--brand); color: #0b1120; border-color: var(--brand); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+.btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.btn-primary { background: var(--brand); color: #0b1120; }
+.btn-ghost { background: var(--card); color: var(--text); }
+.btn-danger { background: transparent; color: var(--red); flex: 0 0 auto; padding: 14px 18px; }
+
+/* ===== Historial ===== */
+.hist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.hist-row .cat-name { font-size: 15px; }
+.hist-nums { text-align: right; }
+.hist-nums .real { font-weight: 700; }
+.hist-nums .budget { color: var(--muted); font-size: 12px; }
+.progress-mini { height: 6px; background: var(--card-2); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.progress-mini > div { height: 100%; border-radius: 4px; }
+
+/* ===== Metas ===== */
+.goal { margin-bottom: 8px; }
+.goal-head { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px; }
+.goal-track { height: 12px; background: var(--card-2); border-radius: 8px; overflow: hidden; }
+.goal-fill { height: 100%; background: var(--ahorro); border-radius: 8px; }
+.goal-sub { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+/* ===== Ajustes ===== */
+.setting-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0; border-bottom: 1px solid var(--line);
+}
+.setting-row input { width: 120px; text-align: right; }
+.link-btn { background: none; color: var(--brand); font-size: 14px; padding: 12px 0; }
+.danger-text { color: var(--red); }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.5; }
