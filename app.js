@@ -275,14 +275,19 @@ function renderAjustes() {
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Tus datos</div>
-    <div class="card">
       <div class="card-title">Importar estado de cuenta</div>
       <div class="hint" style="margin-bottom:10px">Descarga tus movimientos del banco como <b>CSV</b> y súbelos aquí. Bolsillo saca los ingresos y gastos por ti.</div>
       <button class="link-btn" onclick="$('#estadoFile').click()">📄 Elegir archivo CSV…</button>
       <input type="file" id="estadoFile" accept=".csv,text/csv" hidden onchange="importarEstado(event)" />
     </div>
-      </div>
+    <div class="card">
+      <div class="card-title">Tus datos</div>
+      <div class="hint">Todo se guarda solo en este teléfono. Respalda de vez en cuando por si cambias de equipo.</div>
+      <button class="link-btn" onclick="exportar()">⬇️ Exportar respaldo (archivo)</button><br>
+      <button class="link-btn" onclick="$('#importFile').click()">⬆️ Importar respaldo</button>
+      <input type="file" id="importFile" accept="application/json" hidden onchange="importar(event)" />
+      <button class="link-btn danger-text" onclick="borrarTodo()">🗑️ Borrar todos mis datos</button>
+    </div>
     <div class="card">
       <div class="card-title">Próximamente</div>
       <div class="hint">Fase 2: conectar con tu Google Sheet para verlo también en la compu.</div>
